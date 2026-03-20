@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { PageType } from "../types";
+import { useApp } from "../context/AppContext";
 import {
   Shield,
   LayoutDashboard,
@@ -30,6 +31,8 @@ const navItems: { page: PageType; label: string; icon: React.ReactNode }[] = [
 
 export default function Navbar({ currentPage, onNavigate }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { currentWorker } = useApp();
+  const displayName = currentWorker ? `${currentWorker.name.split(' ')[0]} ${currentWorker.name.split(' ').pop()?.charAt(0)}.` : "User";
 
   return (
     <nav className="glass sticky top-0 z-50 border-b border-[var(--color-border)]">
@@ -71,7 +74,7 @@ export default function Navbar({ currentPage, onNavigate }: NavbarProps) {
               className="flex items-center gap-2 px-3 py-2 rounded-lg bg-transparent border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-primary)] transition-all cursor-pointer text-sm"
             >
               <User size={16} />
-              Rajesh K.
+              {displayName}
             </button>
           </div>
 

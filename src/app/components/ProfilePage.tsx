@@ -1,11 +1,12 @@
 "use client";
 import { Shield, User, MapPin, Bike, IndianRupee, Clock, Zap, CheckCircle } from "lucide-react";
-import { mockWorkers, mockPolicies, mockClaims } from "../data";
+import { useApp } from "../context/AppContext";
 
 export default function ProfilePage() {
-  const worker = mockWorkers[0];
-  const policy = mockPolicies[0];
-  const workerClaims = mockClaims.filter(c => c.workerId === worker.id);
+  const { currentWorker, policies, claims } = useApp();
+  const worker = currentWorker!;
+  const policy = policies.find((p) => p.workerId === worker.id);
+  const workerClaims = claims.filter((c) => c.workerId === worker.id);
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6">
@@ -71,6 +72,12 @@ export default function ProfilePage() {
         </div>
       )}
 
+      {!policy && (
+        <div className="glass rounded-2xl p-6 text-center">
+          <p className="text-[var(--color-text-muted)]">No active policy. Complete onboarding to get covered!</p>
+        </div>
+      )}
+
       {/* Claim History */}
       <div className="glass rounded-2xl p-6">
         <h3 className="font-semibold mb-4 flex items-center gap-2"><Zap size={16} /> My Claims</h3>
@@ -84,7 +91,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="text-right">
                   <div className="font-bold">₹{claim.amount}</div>
-                  <span className={`text-xs ${claim.status === "paid" ? "text-emerald-400" : "text-amber-400"}`}>
+                  <span className={`text-xs ${claim.status === "paid" || claim.status === "auto_approved" ? "text-emerald-400" : "text-amber-400"}`}>
                     {claim.status.replace("_", " ")}
                   </span>
                 </div>
@@ -98,7 +105,7 @@ export default function ProfilePage() {
         <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 border border-emerald-500/20">
           <div className="text-sm font-semibold text-emerald-400">💰 Total Earnings Protected</div>
           <div className="text-2xl font-bold mt-1">₹{workerClaims.reduce((sum, c) => sum + c.amount, 0).toLocaleString()}</div>
-          <div className="text-xs text-[var(--color-text-muted)]">across {workerClaims.length} claims this month</div>
+          <div className="text-xs text-[var(--color-text-muted)]">across {workerClaims.length} claims</div>
         </div>
       </div>
     </div>

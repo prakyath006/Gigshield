@@ -1,12 +1,15 @@
 "use client";
 import { useState } from "react";
-import { AlertTriangle, CloudRain, Thermometer, Wind, Eye, Zap, Users, Clock } from "lucide-react";
-import { mockAlerts, getRandomWeatherData } from "../data";
+import { AlertTriangle, CloudRain, Thermometer, Wind, Eye, Zap, Users, Clock, CheckCircle, IndianRupee } from "lucide-react";
+import { useApp } from "../context/AppContext";
+import { getRandomWeatherData } from "../data";
 
 export default function AlertsPage() {
+  const { alerts, triggerDisruption } = useApp();
   const [simulating, setSimulating] = useState(false);
   const [simWeather, setSimWeather] = useState(getRandomWeatherData());
   const [simTriggered, setSimTriggered] = useState(false);
+  const [newClaims, setNewClaims] = useState<{ workerName: string; amount: number; lostHours: number }[]>([]);
 
   const severityColors: Record<string, string> = {
     low: "border-emerald-500/30 bg-emerald-500/5",
@@ -32,12 +35,16 @@ export default function AlertsPage() {
   const handleSimulate = () => {
     setSimulating(true);
     setSimTriggered(false);
+    setNewClaims([]);
     const newWeather = getRandomWeatherData();
     setSimWeather(newWeather);
     setTimeout(() => {
       setSimulating(false);
       if (newWeather.rainfall > 64 || newWeather.temp > 45 || newWeather.aqi > 400) {
         setSimTriggered(true);
+        // Actually create claims in the app state!
+        const createdClaims = triggerDisruption(newWeather);
+        setNewClaims(createdClaims.map((c) => ({ workerName: c.workerName, amount: c.amount, lostHours: c.lostHours })));
       }
     }, 2000);
   };
@@ -82,23 +89,57 @@ export default function AlertsPage() {
           ))}
         </div>
 
-        {/* Trigger Result */}
+        {/* Trigger Result - With Real Claims */}
         {simTriggered && !simulating && (
-          <div className="p-4 rounded-xl bg-gradient-to-r from-red-500/10 to-amber-500/10 border border-red-500/30 animate-slide-up">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center">
-                <AlertTriangle size={20} className="text-red-400" />
-              </div>
-              <div>
-                <div className="font-semibold text-red-400">⚡ Parametric Trigger Activated!</div>
-                <div className="text-sm text-[var(--color-text-secondary)]">
-                  {simWeather.rainfall > 64 && "Heavy rainfall threshold exceeded (>64mm/hr). "}
-                  {simWeather.temp > 45 && "Extreme heat threshold exceeded (>45°C). "}
-                  {simWeather.aqi > 400 && "Hazardous AQI threshold exceeded (>400). "}
-                  Auto-claims initiated for affected workers.
+          <div className="space-y-3 animate-slide-up">
+            <div className="p-4 rounded-xl bg-gradient-to-r from-red-500/10 to-amber-500/10 border border-red-500/30">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center">
+                  <AlertTriangle size={20} className="text-red-400" />
+                </div>
+                <div>
+                  <div className="font-semibold text-red-400">⚡ Parametric Trigger Activated!</div>
+                  <div className="text-sm text-[var(--color-text-secondary)]">
+                    {simWeather.rainfall > 64 && "Heavy rainfall threshold exceeded (>64mm/hr). "}
+                    {simWeather.temp > 45 && "Extreme heat threshold exceeded (>45°C). "}
+                    {simWeather.aqi > 400 && "Hazardous AQI threshold exceeded (>400). "}
+                    Auto-claims initiated for {newClaims.length} affected workers.
+                  </div>
                 </div>
               </div>
             </div>
+
+            {/* Show created claims */}
+            {newClaims.length > 0 && (
+              <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 border border-emerald-500/30">
+                <div className="font-semibold text-emerald-400 text-sm mb-3 flex items-center gap-2">
+                  <CheckCircle size={16} /> Claims Auto-Created & Payouts Processing
+                </div>
+                <div className="space-y-2">
+                  {newClaims.map((claim, i) => (
+                    <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-[var(--color-surface)]">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg gradient-bg flex items-center justify-center text-white text-xs font-bold">
+                          {claim.workerName.charAt(0)}
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium">{claim.workerName}</div>
+                          <div className="text-xs text-[var(--color-text-muted)]">{claim.lostHours} hours lost</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <IndianRupee size={14} className="text-emerald-400" />
+                        <span className="font-bold text-emerald-400">₹{claim.amount}</span>
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400">UPI Sent</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-3 text-xs text-[var(--color-text-muted)]">
+                  Total payout: ₹{newClaims.reduce((sum, c) => sum + c.amount, 0).toLocaleString()} • Processing time: 4.2 mins avg
+                </div>
+              </div>
+            )}
           </div>
         )}
         {!simTriggered && !simulating && simWeather.rainfall <= 64 && simWeather.temp <= 45 && simWeather.aqi <= 400 && (
@@ -112,9 +153,9 @@ export default function AlertsPage() {
 
       {/* Active Alerts */}
       <div>
-        <h3 className="font-semibold mb-4">Active & Recent Alerts</h3>
+        <h3 className="font-semibold mb-4">Active & Recent Alerts ({alerts.length})</h3>
         <div className="space-y-4">
-          {mockAlerts.map((alert) => (
+          {alerts.map((alert) => (
             <div key={alert.id} className={`rounded-2xl p-5 border ${severityColors[alert.severity]} transition-all`}>
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 rounded-xl bg-[var(--color-surface-light)] flex items-center justify-center text-[var(--color-primary-light)]">

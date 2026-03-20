@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { ChevronRight, ChevronLeft, Shield, Zap, CheckCircle, Brain, MapPin, User, Bike, IndianRupee } from "lucide-react";
 import { PageType, Worker } from "../types";
+import { useApp } from "../context/AppContext";
 import { calculateDynamicPremium, generateRiskProfile } from "../data";
 
 interface OnboardingPageProps {
@@ -9,6 +10,7 @@ interface OnboardingPageProps {
 }
 
 export default function OnboardingPage({ onNavigate }: OnboardingPageProps) {
+  const { addWorker } = useApp();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     name: "",
@@ -305,7 +307,15 @@ export default function OnboardingPage({ onNavigate }: OnboardingPageProps) {
             <ChevronLeft size={16} /> Back
           </button>
           <button
-            onClick={() => step < totalSteps ? setStep(step + 1) : onNavigate("dashboard")}
+            onClick={() => {
+              if (step < totalSteps) {
+                setStep(step + 1);
+              } else {
+                // Actually add the worker to state!
+                addWorker(demoWorker, formData.selectedPlan);
+                onNavigate("dashboard");
+              }
+            }}
             className="btn-primary inline-flex items-center gap-2"
           >
             {step === totalSteps ? (

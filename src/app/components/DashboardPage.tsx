@@ -11,7 +11,8 @@ import {
   CloudRain,
   CheckCircle,
 } from "lucide-react";
-import { mockDashboardMetrics, mockAlerts, weeklyClaimsData, mockClaims } from "../data";
+import { useApp } from "../context/AppContext";
+import { weeklyClaimsData } from "../data";
 import {
   BarChart,
   Bar,
@@ -25,23 +26,27 @@ import {
 } from "recharts";
 
 export default function DashboardPage() {
-  const m = mockDashboardMetrics;
+  const { currentWorker, claims, alerts, getDashboardMetrics } = useApp();
+  const m = getDashboardMetrics();
+  const displayName = currentWorker?.name.split(" ")[0] || "User";
 
   const statCards = [
-    { icon: <Users size={20} />, label: "Active Workers", value: m.totalWorkers.toLocaleString(), color: "from-indigo-500 to-indigo-600", change: "+124 this week" },
-    { icon: <Shield size={20} />, label: "Active Policies", value: m.activePolicies.toLocaleString(), color: "from-cyan-500 to-cyan-600", change: "75.7% coverage" },
-    { icon: <Zap size={20} />, label: "Claims This Week", value: m.totalClaimsThisWeek.toString(), color: "from-amber-500 to-amber-600", change: "+96.7% vs last week" },
+    { icon: <Users size={20} />, label: "Active Workers", value: m.totalWorkers.toLocaleString(), color: "from-indigo-500 to-indigo-600", change: `+${Math.max(1, m.totalWorkers - 8)} this week` },
+    { icon: <Shield size={20} />, label: "Active Policies", value: m.activePolicies.toLocaleString(), color: "from-cyan-500 to-cyan-600", change: `${m.activePolicies > 0 ? ((m.activePolicies / m.totalWorkers) * 100).toFixed(1) : 0}% coverage` },
+    { icon: <Zap size={20} />, label: "Claims This Week", value: m.totalClaimsThisWeek.toString(), color: "from-amber-500 to-amber-600", change: `${m.totalClaimsThisWeek} processed` },
     { icon: <IndianRupee size={20} />, label: "Payouts This Week", value: `₹${(m.totalPayoutsThisWeek / 1000).toFixed(1)}K`, color: "from-emerald-500 to-emerald-600", change: `₹${m.avgPremiumPerWeek} avg premium` },
     { icon: <TrendingUp size={20} />, label: "Loss Ratio", value: `${(m.lossRatio * 100).toFixed(0)}%`, color: "from-rose-500 to-rose-600", change: "Target: <75%" },
     { icon: <Brain size={20} />, label: "Fraud Detection", value: `${(m.fraudDetectionRate * 100).toFixed(0)}%`, color: "from-violet-500 to-violet-600", change: `${(m.autoApprovalRate * 100).toFixed(0)}% auto-approved` },
   ];
+
+  const activeAlerts = alerts.filter((a) => a.isActive);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold">
-          Welcome back, <span className="gradient-text">Rajesh</span>
+          Welcome back, <span className="gradient-text">{displayName}</span>
         </h1>
         <p className="text-[var(--color-text-secondary)] mt-1">
           Here&apos;s your GigShield overview for this week
@@ -49,19 +54,19 @@ export default function DashboardPage() {
       </div>
 
       {/* Active Alert Banner */}
-      {mockAlerts.filter((a) => a.isActive).length > 0 && (
+      {activeAlerts.length > 0 && (
         <div className="rounded-2xl p-4 bg-gradient-to-r from-amber-500/10 to-red-500/10 border border-amber-500/30 flex items-start gap-3">
           <AlertTriangle size={20} className="text-amber-400 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
             <div className="font-semibold text-amber-300 text-sm">
-              {mockAlerts.filter((a) => a.isActive).length} Active Weather Alerts
+              {activeAlerts.length} Active Weather Alert{activeAlerts.length > 1 ? "s" : ""}
             </div>
             <p className="text-sm text-[var(--color-text-secondary)] mt-1">
-              {mockAlerts.find((a) => a.isActive)?.message}
+              {activeAlerts[0]?.message}
             </p>
           </div>
           <span className="text-xs px-2 py-1 rounded-full bg-amber-500/20 text-amber-400 font-medium">
-            {mockAlerts.find((a) => a.isActive)?.affectedWorkers} workers affected
+            {activeAlerts[0]?.affectedWorkers} workers affected
           </span>
         </div>
       )}
@@ -138,7 +143,7 @@ export default function DashboardPage() {
       <div className="glass rounded-2xl p-6">
         <h3 className="font-semibold mb-4">Recent Claims Activity</h3>
         <div className="space-y-3">
-          {mockClaims.slice(0, 4).map((claim) => {
+          {claims.slice(0, 5).map((claim) => {
             const statusColors: Record<string, string> = {
               paid: "bg-emerald-500/20 text-emerald-400",
               auto_approved: "bg-indigo-500/20 text-indigo-400",

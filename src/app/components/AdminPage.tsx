@@ -1,9 +1,10 @@
 "use client";
 import { Shield, Users, Search, CheckCircle, XCircle, Clock, AlertTriangle, Brain, Zap } from "lucide-react";
-import { mockWorkers, mockClaims, mockPolicies, mockDashboardMetrics } from "../data";
+import { useApp } from "../context/AppContext";
 
 export default function AdminPage() {
-  const m = mockDashboardMetrics;
+  const { workers, claims, getDashboardMetrics } = useApp();
+  const m = getDashboardMetrics();
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
@@ -51,7 +52,7 @@ export default function AdminPage() {
               </tr>
             </thead>
             <tbody>
-              {mockWorkers.map((worker) => (
+              {workers.map((worker) => (
                 <tr key={worker.id} className="border-b border-[var(--color-border)] hover:bg-[var(--color-surface-light)] transition-colors">
                   <td className="py-3 px-3">
                     <div className="font-medium">{worker.name}</div>
@@ -94,7 +95,7 @@ export default function AdminPage() {
           <AlertTriangle size={16} className="text-red-400" /> Flagged Claims — Fraud Review
         </h3>
         <div className="space-y-3">
-          {mockClaims.filter(c => c.fraudScore > 20).map((claim) => (
+          {claims.filter(c => c.fraudScore > 20).map((claim) => (
             <div key={claim.id} className={`p-4 rounded-xl border ${claim.fraudScore > 70 ? "border-red-500/30 bg-red-500/5" : "border-amber-500/30 bg-amber-500/5"}`}>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-3">

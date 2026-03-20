@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { PageType } from "./types";
+import { AppProvider } from "./context/AppContext";
 import Navbar from "./components/Navbar";
 import LandingPage from "./components/LandingPage";
 import DashboardPage from "./components/DashboardPage";
@@ -46,11 +47,13 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--color-surface)]">
-      {currentPage !== "landing" && (
-        <Navbar currentPage={currentPage} onNavigate={handleNavigate} />
-      )}
-      {renderPage()}
-    </div>
+    <AppProvider>
+      <div className="min-h-screen bg-[var(--color-surface)]">
+        {currentPage !== "landing" && (
+          <Navbar currentPage={currentPage} onNavigate={handleNavigate} />
+        )}
+        {renderPage()}
+      </div>
+    </AppProvider>
   );
 }

@@ -1,8 +1,10 @@
 "use client";
 import { Shield, ChevronRight, CheckCircle, Clock, XCircle, RefreshCw } from "lucide-react";
-import { mockPolicies, defaultTriggers } from "../data";
+import { useApp } from "../context/AppContext";
+import { defaultTriggers } from "../data";
 
 export default function PoliciesPage() {
+  const { policies } = useApp();
   const statusConfig: Record<string, { color: string; icon: React.ReactNode }> = {
     active: { color: "bg-emerald-500/20 text-emerald-400", icon: <CheckCircle size={14} /> },
     expired: { color: "bg-red-500/20 text-red-400", icon: <XCircle size={14} /> },
@@ -24,7 +26,7 @@ export default function PoliciesPage() {
 
       {/* Policy Cards */}
       <div className="grid md:grid-cols-2 gap-4">
-        {mockPolicies.map((policy) => (
+        {policies.map((policy) => (
           <div key={policy.id} className="glass rounded-2xl p-6 card-hover">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">

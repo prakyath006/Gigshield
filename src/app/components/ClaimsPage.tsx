@@ -1,14 +1,16 @@
 "use client";
 import { useState } from "react";
 import { Zap, CheckCircle, Clock, AlertTriangle, XCircle, Shield, Brain, MapPin, CloudRain, Thermometer, Wind } from "lucide-react";
-import { mockClaims, detectFraud } from "../data";
+import { useApp } from "../context/AppContext";
+import { detectFraud } from "../data";
 import { Claim } from "../types";
 
 export default function ClaimsPage() {
+  const { claims } = useApp();
   const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
   const [filter, setFilter] = useState<string>("all");
 
-  const filteredClaims = filter === "all" ? mockClaims : mockClaims.filter(c => c.status === filter);
+  const filteredClaims = filter === "all" ? claims : claims.filter(c => c.status === filter);
 
   const statusConfig: Record<string, { color: string; icon: React.ReactNode; label: string }> = {
     paid: { color: "bg-emerald-500/20 text-emerald-400", icon: <CheckCircle size={14} />, label: "Paid" },
