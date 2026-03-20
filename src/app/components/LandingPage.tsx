@@ -101,8 +101,46 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
         </div>
       </section>
 
+      {/* Anti-Spoofing Defense — UNIQUE DIFFERENTIATOR */}
+      <section className="py-20 px-4 bg-gradient-to-b from-transparent via-red-950/10 to-transparent">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-medium mb-4">
+              <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" /> THREAT DEFENSE ACTIVE
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+              GPS is <span className="text-red-400 line-through">Trusted</span> → GPS is <span className="gradient-text">Verified</span>
+            </h2>
+            <p className="text-[var(--color-text-secondary)] max-w-2xl mx-auto">
+              Our Genuine Presence Score (GPS*) engine replaces blind GPS trust with a multi-signal consensus model that catches spoofing syndicates while protecting honest workers.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { icon: "📡", title: "Environment Check", desc: "Verifies weather event exists at location via IMD/OpenWeatherMap + IoT sensors", signal: "30%" },
+              { icon: "📱", title: "Device Integrity", desc: "Detects mock-location apps, checks WiFi BSSID vs GPS, barometer consistency", signal: "25%" },
+              { icon: "🏃", title: "Behavioral Biometrics", desc: "Accelerometer, step counter, battery drain — is the rider physically present?", signal: "25%" },
+              { icon: "🔗", title: "Platform Cross-Check", desc: "Delivery trail, network fingerprint, IP geolocation all must corroborate", signal: "20%" },
+            ].map((item, i) => (
+              <div key={i} className="glass rounded-2xl p-6 card-hover">
+                <span className="text-3xl mb-3 block">{item.icon}</span>
+                <h3 className="font-semibold mb-1">{item.title}</h3>
+                <p className="text-xs text-[var(--color-text-secondary)] mb-3">{item.desc}</p>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 h-1.5 rounded-full bg-[var(--color-surface-lighter)] overflow-hidden">
+                    <div className="h-full rounded-full gradient-bg" style={{ width: item.signal }} />
+                  </div>
+                  <span className="text-xs font-bold text-[var(--color-primary-light)]">{item.signal}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Coverage */}
-      <section className="py-20 px-4 bg-gradient-to-b from-transparent via-indigo-950/20 to-transparent">
+      <section className="py-20 px-4">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl sm:text-4xl font-bold text-center mb-12">
             What We <span className="gradient-text">Cover</span>
