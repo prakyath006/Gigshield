@@ -66,7 +66,7 @@ export default function AnalyticsPage() {
                 <XAxis dataKey="range" stroke="var(--color-text-muted)" fontSize={12} />
                 <YAxis stroke="var(--color-text-muted)" fontSize={12} />
                 <Tooltip contentStyle={{ background: "var(--color-surface-light)", border: "1px solid var(--color-border)", borderRadius: "12px", color: "var(--color-text-primary)" }}
-                  formatter={(value: number, name: string) => [value, "Workers"]} />
+                  formatter={(value) => [value, "Workers"]} />
                 <Bar dataKey="count" fill="#6366f1" radius={[6, 6, 0, 0]}>
                   {riskScoreDistribution.map((entry, i) => (
                     <Cell key={i} fill={["#10b981", "#06b6d4", "#f59e0b", "#ef4444", "#dc2626"][i]} />
