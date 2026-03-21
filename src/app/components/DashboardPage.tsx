@@ -49,7 +49,7 @@ export default function DashboardPage() {
           Welcome back, <span className="gradient-text">{displayName}</span>
         </h1>
         <p className="text-[var(--color-text-secondary)] mt-1">
-          Here&apos;s your GigShield overview for this week
+          Here&apos;s your Floor overview for this week
         </p>
       </div>
 

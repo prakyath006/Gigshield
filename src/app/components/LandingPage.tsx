@@ -21,18 +21,22 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
             AI-Powered Parametric Insurance for India&apos;s Gig Workers
           </div>
 
-          <h1 className="text-5xl sm:text-7xl font-black mb-6 leading-tight animate-slide-up">
-            Protect Your <span className="gradient-text">Earnings</span>
+          <h1 className="text-5xl sm:text-7xl font-black mb-4 leading-tight animate-slide-up">
+            Your earnings have a
             <br />
-            From What You <span className="gradient-text">Can&apos;t Control</span>
+            <span className="gradient-text">Floor</span> now.
           </h1>
 
-          <p className="text-lg sm:text-xl text-[var(--color-text-secondary)] max-w-2xl mx-auto mb-10 animate-slide-up" style={{ animationDelay: "0.2s" }}>
-            Heavy rain? Extreme heat? Sudden strikes? GigShield automatically detects disruptions and pays you for lost income — no paperwork, no waiting.
+          <p className="text-base sm:text-lg text-[var(--color-text-secondary)] max-w-xl mx-auto mb-3 animate-slide-up font-medium" style={{ animationDelay: "0.1s" }}>
+            Because when the city halts, your earnings shouldn&apos;t.
+          </p>
+
+          <p className="text-sm text-[var(--color-text-muted)] max-w-2xl mx-auto mb-10 animate-slide-up" style={{ animationDelay: "0.2s" }}>
+            Heavy rain? Extreme heat? Sudden strikes? Floor automatically detects disruptions via live weather APIs and pays you for lost income — no paperwork, no waiting.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up" style={{ animationDelay: "0.4s" }}>
-            <button onClick={() => onNavigate("onboarding")} className="btn-primary text-lg px-8 py-4 rounded-2xl inline-flex items-center gap-2">
+            <button onClick={() => onNavigate("register")} className="btn-primary text-lg px-8 py-4 rounded-2xl inline-flex items-center gap-2">
               Get Protected Now <ChevronRight size={20} />
             </button>
             <button onClick={() => onNavigate("dashboard")} className="btn-secondary text-lg px-8 py-4 rounded-2xl">
@@ -62,7 +66,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
       <section className="py-20 px-4">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4">
-            How <span className="gradient-text">GigShield</span> Works
+            How <span className="gradient-text">Floor</span> Works
           </h2>
           <p className="text-center text-[var(--color-text-secondary)] mb-12 max-w-xl mx-auto">
             Zero-touch income protection. Our AI monitors disruptions 24/7 and pays you automatically.
@@ -233,7 +237,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
                 </div>
 
                 <button
-                  onClick={() => onNavigate("onboarding")}
+                  onClick={() => onNavigate("register")}
                   className={`w-full mt-8 py-3 rounded-xl font-semibold cursor-pointer transition-all ${
                     tier.popular ? "btn-primary" : "btn-secondary"
                   }`}
@@ -251,7 +255,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <Shield size={20} className="text-[var(--color-primary)]" />
-            <span className="font-bold gradient-text">GigShield</span>
+            <span className="font-bold gradient-text">Floor</span>
             <span className="text-sm text-[var(--color-text-muted)]">© 2026</span>
           </div>
           <p className="text-sm text-[var(--color-text-muted)]">

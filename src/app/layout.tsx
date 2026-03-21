@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "GigShield — AI-Powered Income Protection for Delivery Partners",
+  title: "Floor — AI-Powered Income Protection for Delivery Partners",
   description:
     "Protect your earnings from weather disruptions, strikes, and environmental events. India's first parametric insurance platform built for gig economy workers with automated claims and instant payouts.",
   keywords:
     "gig insurance, delivery partner insurance, parametric insurance, income protection, weather insurance, Zomato, Swiggy, food delivery",
-  authors: [{ name: "GigShield Team" }],
+  authors: [{ name: "Floor Team" }],
   openGraph: {
-    title: "GigShield — AI-Powered Income Protection",
+    title: "Floor — AI-Powered Income Protection",
     description: "India's first parametric insurance for delivery partners",
     type: "website",
   },

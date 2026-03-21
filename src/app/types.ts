@@ -1,5 +1,5 @@
 // ==========================================
-// GigShield - Type Definitions
+// Floor - Type Definitions
 // ==========================================
 
 export interface Worker {
@@ -167,11 +167,13 @@ export interface PremiumBreakdownItem {
 
 export type PageType =
   | "landing"
+  | "register"
   | "onboarding"
   | "dashboard"
   | "policies"
   | "claims"
   | "alerts"
+  | "triggers"
   | "analytics"
   | "profile"
   | "admin";

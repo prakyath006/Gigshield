@@ -4,11 +4,13 @@ import { PageType } from "./types";
 import { AppProvider } from "./context/AppContext";
 import Navbar from "./components/Navbar";
 import LandingPage from "./components/LandingPage";
+import RegisterPage from "./components/RegisterPage";
 import DashboardPage from "./components/DashboardPage";
 import OnboardingPage from "./components/OnboardingPage";
 import PoliciesPage from "./components/PoliciesPage";
 import ClaimsPage from "./components/ClaimsPage";
 import AlertsPage from "./components/AlertsPage";
+import TriggerCenterPage from "./components/TriggerCenterPage";
 import AnalyticsPage from "./components/AnalyticsPage";
 import AdminPage from "./components/AdminPage";
 import ProfilePage from "./components/ProfilePage";
@@ -25,6 +27,8 @@ export default function Home() {
     switch (currentPage) {
       case "landing":
         return <LandingPage onNavigate={handleNavigate} />;
+      case "register":
+        return <RegisterPage onNavigate={handleNavigate} />;
       case "onboarding":
         return <OnboardingPage onNavigate={handleNavigate} />;
       case "dashboard":
@@ -35,6 +39,8 @@ export default function Home() {
         return <ClaimsPage />;
       case "alerts":
         return <AlertsPage />;
+      case "triggers":
+        return <TriggerCenterPage />;
       case "analytics":
         return <AnalyticsPage />;
       case "admin":
@@ -49,7 +55,7 @@ export default function Home() {
   return (
     <AppProvider>
       <div className="min-h-screen bg-[var(--color-surface)]">
-        {currentPage !== "landing" && (
+        {currentPage !== "landing" && currentPage !== "register" && (
           <Navbar currentPage={currentPage} onNavigate={handleNavigate} />
         )}
         {renderPage()}

@@ -1,5 +1,5 @@
 // ==========================================
-// GigShield - Mock Data & AI Simulation
+// Floor - Mock Data & AI Simulation
 // ==========================================
 
 import {

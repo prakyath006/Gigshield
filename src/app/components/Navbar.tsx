@@ -13,6 +13,7 @@ import {
   Menu,
   X,
   Zap,
+  Radio,
 } from "lucide-react";
 
 interface NavbarProps {
@@ -25,6 +26,7 @@ const navItems: { page: PageType; label: string; icon: React.ReactNode }[] = [
   { page: "policies", label: "Policies", icon: <FileText size={18} /> },
   { page: "claims", label: "Claims", icon: <Zap size={18} /> },
   { page: "alerts", label: "Alerts", icon: <AlertTriangle size={18} /> },
+  { page: "triggers", label: "Triggers", icon: <Radio size={18} /> },
   { page: "analytics", label: "Analytics", icon: <BarChart3 size={18} /> },
   { page: "admin", label: "Admin", icon: <Settings size={18} /> },
 ];
@@ -46,7 +48,7 @@ export default function Navbar({ currentPage, onNavigate }: NavbarProps) {
             <div className="w-9 h-9 rounded-xl gradient-bg flex items-center justify-center">
               <Shield size={20} className="text-white" />
             </div>
-            <span className="text-xl font-bold gradient-text">GigShield</span>
+            <span className="text-xl font-bold gradient-text">Floor</span>
           </button>
 
           {/* Desktop Nav */}
