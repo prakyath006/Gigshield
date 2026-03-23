@@ -250,6 +250,113 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
         </div>
       </section>
 
+      {/* Standard Exclusions — INSURANCE DOMAIN KNOWLEDGE */}
+      <section className="py-20 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-medium mb-4">
+              ⚖️ REGULATORY COMPLIANCE
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+              Standard <span className="gradient-text">Exclusions</span>
+            </h2>
+            <p className="text-[var(--color-text-secondary)] max-w-2xl mx-auto">
+              As fundamental to any viable insurance product, Floor implements industry-standard exclusion clauses to protect the risk pool from uninsurable, catastrophic events.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { icon: "⚔️", title: "Acts of War & Terrorism", desc: "Disruptions from declared/undeclared war, military action, or terrorist activities are excluded from all policies.", severity: "Critical" },
+              { icon: "🦠", title: "Global Pandemics", desc: "Broad lockdowns or health crises (e.g., COVID-19) are macroeconomic events beyond parametric scope.", severity: "Critical" },
+              { icon: "☢️", title: "Nuclear & Chemical Events", desc: "Any contamination or disruption from nuclear, chemical, or radiological incidents.", severity: "Critical" },
+              { icon: "🚫", title: "Intentional Fraud", desc: "Workers found spoofing GPS or manufacturing claims are permanently blacklisted from the platform.", severity: "High" },
+              { icon: "🏢", title: "Platform Insolvency", desc: "If Zomato/Swiggy goes bankrupt, the resulting lack of work is not covered. Temporary outages ARE covered.", severity: "Medium" },
+              { icon: "📋", title: "Pre-Existing Conditions", desc: "Known disruption conditions at sign-up time are excluded from first-week coverage to prevent adverse selection.", severity: "Medium" },
+            ].map((item, i) => (
+              <div key={i} className="glass rounded-xl p-6 card-hover">
+                <div className="flex items-start gap-4">
+                  <span className="text-2xl shrink-0">{item.icon}</span>
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-semibold text-sm">{item.title}</h3>
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        item.severity === "Critical" ? "bg-red-500/20 text-red-400 border border-red-500/30" :
+                        item.severity === "High" ? "bg-amber-500/20 text-amber-400 border border-amber-500/30" :
+                        "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                      }`}>{item.severity}</span>
+                    </div>
+                    <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">{item.desc}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-center text-xs text-[var(--color-text-muted)] mt-6">
+            These exclusions ensure actuarial models remain stable and the liquidity pool is preserved for high-frequency, localized environmental risks.
+          </p>
+        </div>
+      </section>
+
+      {/* AI/ML Engine — TECHNICAL DEPTH */}
+      <section className="py-20 px-4 bg-gradient-to-b from-transparent via-indigo-950/10 to-transparent">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-xs font-medium mb-4">
+              🧠 MACHINE LEARNING ARCHITECTURE
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+              How Our <span className="gradient-text">AI</span> Actually Works
+            </h2>
+            <p className="text-[var(--color-text-secondary)] max-w-2xl mx-auto">
+              Not a buzzword. Three distinct ML systems with justified algorithm choices powering pricing, prediction, and fraud detection.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                algo: "XGBoost",
+                title: "Dynamic Premium Pricing",
+                desc: "Gradient Boosting Regressor captures non-linear, compounding risks — like how EV scooter risk multiplies exponentially during water-logging vs normal heat.",
+                factors: "7 risk factors",
+                icon: "📊",
+                detail: "Non-linear feature interactions that linear models miss"
+              },
+              {
+                algo: "Isolation Forest",
+                title: "Anomaly Detection",
+                desc: "Unsupervised learning identifies fraud outliers without labeled training data. Genuine claims cluster naturally; fraud is the statistical anomaly.",
+                factors: "4-layer scoring",
+                icon: "🔍",
+                detail: "No labeled fraud data needed — perfect for new markets"
+              },
+              {
+                algo: "LSTM",
+                title: "Disruption Forecasting",
+                desc: "Long Short-Term Memory neural networks trained on 5-year IMD weather time-series data to predict disruption probability 24-72 hours ahead.",
+                factors: "72hr forecast",
+                icon: "🌤️",
+                detail: "Temporal pattern recognition in sequential weather data"
+              },
+            ].map((ml, i) => (
+              <div key={i} className="glass rounded-2xl p-8 card-hover group">
+                <span className="text-3xl mb-4 block">{ml.icon}</span>
+                <div className="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-indigo-500/20 text-indigo-300 text-[10px] font-mono font-bold mb-3">
+                  {ml.algo}
+                </div>
+                <h3 className="text-lg font-bold mb-2">{ml.title}</h3>
+                <p className="text-sm text-[var(--color-text-secondary)] mb-4 leading-relaxed">{ml.desc}</p>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-[var(--color-text-muted)]">{ml.factors}</span>
+                  <span className="text-[var(--color-accent)] font-medium">{ml.detail}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="border-t border-[var(--color-border)] py-8 px-4">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
