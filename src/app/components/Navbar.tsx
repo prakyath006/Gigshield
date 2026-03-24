@@ -14,6 +14,7 @@ import {
   X,
   Zap,
   Radio,
+  Target,
 } from "lucide-react";
 
 interface NavbarProps {
@@ -28,6 +29,7 @@ const navItems: { page: PageType; label: string; icon: React.ReactNode }[] = [
   { page: "alerts", label: "Alerts", icon: <AlertTriangle size={18} /> },
   { page: "triggers", label: "Triggers", icon: <Radio size={18} /> },
   { page: "analytics", label: "Analytics", icon: <BarChart3 size={18} /> },
+  { page: "redteam" as PageType, label: "Red Team", icon: <Target size={18} /> },
   { page: "admin", label: "Admin", icon: <Settings size={18} /> },
 ];
 
@@ -59,7 +61,9 @@ export default function Navbar({ currentPage, onNavigate }: NavbarProps) {
                 onClick={() => onNavigate(item.page)}
                 className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer border-none ${
                   currentPage === item.page
-                    ? "gradient-bg text-white"
+                    ? item.page === "redteam" ? "bg-red-600 text-white" : "gradient-bg text-white"
+                    : item.page === "redteam"
+                    ? "text-red-400 hover:text-red-300 hover:bg-red-900/20 bg-transparent"
                     : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-light)] bg-transparent"
                 }`}
               >

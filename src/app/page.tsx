@@ -14,6 +14,7 @@ import TriggerCenterPage from "./components/TriggerCenterPage";
 import AnalyticsPage from "./components/AnalyticsPage";
 import AdminPage from "./components/AdminPage";
 import ProfilePage from "./components/ProfilePage";
+import RedTeamPage from "./components/RedTeamPage";
 
 export default function Home() {
   const [currentPage, setCurrentPage] = useState<PageType>("landing");
@@ -32,7 +33,7 @@ export default function Home() {
       case "onboarding":
         return <OnboardingPage onNavigate={handleNavigate} />;
       case "dashboard":
-        return <DashboardPage />;
+        return <DashboardPage onNavigate={handleNavigate} />;
       case "policies":
         return <PoliciesPage />;
       case "claims":
@@ -47,6 +48,8 @@ export default function Home() {
         return <AdminPage />;
       case "profile":
         return <ProfilePage />;
+      case "redteam":
+        return <RedTeamPage />;
       default:
         return <LandingPage onNavigate={handleNavigate} />;
     }
