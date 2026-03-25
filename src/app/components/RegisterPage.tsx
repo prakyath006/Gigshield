@@ -1,21 +1,15 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { PageType } from "../types";
-import {
-  Phone,
-  Shield,
-  CheckCircle2,
-  ArrowRight,
-  Fingerprint,
-  Lock,
-  Sparkles,
-} from "lucide-react";
+import { Phone, Shield, CheckCircle2, ArrowRight, Fingerprint, Lock, Sparkles } from "lucide-react";
+import { useApp } from "../context/AppContext";
 
 interface RegisterPageProps {
   onNavigate: (page: PageType) => void;
 }
 
 export default function RegisterPage({ onNavigate }: RegisterPageProps) {
+  const { setCurrentWorker } = useApp();
   const [step, setStep] = useState<"phone" | "otp" | "verified">("phone");
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
@@ -65,16 +59,33 @@ export default function RegisterPage({ onNavigate }: RegisterPageProps) {
     }
   };
 
-  const verifyOtp = (enteredOtp: string) => {
+  const verifyOtp = async (enteredOtp: string) => {
     setIsVerifying(true);
-    setTimeout(() => {
-      // Accept any 6-digit OTP for demo
-      if (enteredOtp.length === 6) {
+    
+    if (enteredOtp.length === 6) {
+      try {
+        const { fetchWorkers } = await import("../services/api");
+        const workers = await fetchWorkers();
+        const existingWorker = workers?.find((w: any) => w.phone === phone);
+
+        setStep("verified");
+        setTimeout(() => {
+          if (existingWorker) {
+            // Existing user, log them in and go directly to dashboard
+            setCurrentWorker(existingWorker);
+            onNavigate("dashboard");
+          } else {
+            // New user, push to onboarding
+            onNavigate("onboarding");
+          }
+        }, 1500);
+      } catch (err) {
         setStep("verified");
         setTimeout(() => onNavigate("onboarding"), 1500);
       }
+    } else {
       setIsVerifying(false);
-    }, 1200);
+    }
   };
 
   return (
@@ -197,6 +208,38 @@ export default function RegisterPage({ onNavigate }: RegisterPageProps) {
                   </p>
                 </div>
               </div>
+
+              {/* Quick Access — Sandbox accounts */}
+              <div className="mt-4 p-4 rounded-xl bg-[var(--color-surface-light)] border border-[var(--color-border)]">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles size={14} className="text-violet-400" />
+                  <span className="text-xs font-semibold text-[var(--color-text-secondary)]">Sandbox Test Accounts</span>
+                </div>
+                <div className="space-y-2">
+                  {[
+                    { name: "Rajesh Kumar", phone: "9876543210", platform: "Zomato", city: "Mumbai" },
+                    { name: "Priya Sharma", phone: "9876543211", platform: "Swiggy", city: "Mumbai" },
+                    { name: "Amit Patel", phone: "9876543212", platform: "Zepto", city: "Delhi" },
+                  ].map((acct) => (
+                    <button
+                      key={acct.phone}
+                      onClick={() => { setPhone(acct.phone); }}
+                      className="w-full flex items-center justify-between p-2.5 rounded-lg bg-[var(--color-surface)] hover:bg-[var(--color-surface-lighter)] border border-transparent hover:border-[var(--color-border)] transition-all cursor-pointer text-left"
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500/20 to-cyan-500/20 flex items-center justify-center text-[10px] font-bold text-[var(--color-primary-light)]">
+                          {acct.name.split(" ").map(n => n[0]).join("")}
+                        </div>
+                        <div>
+                          <div className="text-xs font-medium">{acct.name}</div>
+                          <div className="text-[10px] text-[var(--color-text-muted)]">{acct.platform} • {acct.city}</div>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-mono text-[var(--color-text-muted)]">+91 {acct.phone}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 
@@ -261,12 +304,7 @@ export default function RegisterPage({ onNavigate }: RegisterPageProps) {
                 )}
               </div>
 
-              {/* Demo hint */}
-              <div className="p-3 rounded-xl bg-yellow-500/5 border border-yellow-500/20">
-                <p className="text-xs text-yellow-400/80 text-center">
-                  💡 Demo Mode: Enter any 6 digits to proceed. Generated OTP: <span className="font-bold">{generatedOtp}</span>
-                </p>
-              </div>
+
             </div>
           )}
 
