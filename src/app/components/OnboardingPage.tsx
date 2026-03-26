@@ -241,7 +241,7 @@ export default function OnboardingPage({ onNavigate }: OnboardingPageProps) {
           </div>
         )}
 
-        {/* Step 4: Choose Plan & Premium */}
+        {/* Step 4: Choose Plan & Dynamic Premium Visualization */}
         {step === 4 && (
           <div className="animate-fade-in space-y-6">
             <div className="flex items-center gap-3 mb-2">
@@ -250,7 +250,7 @@ export default function OnboardingPage({ onNavigate }: OnboardingPageProps) {
               </div>
               <div>
                 <h2 className="text-2xl font-bold">Choose Your Plan</h2>
-                <p className="text-sm text-[var(--color-text-secondary)]">AI-personalized weekly premium for you</p>
+                <p className="text-sm text-[var(--color-text-secondary)]">AI-personalized weekly premium — see how each factor adjusts your price</p>
               </div>
             </div>
 
@@ -272,28 +272,95 @@ export default function OnboardingPage({ onNavigate }: OnboardingPageProps) {
               })}
             </div>
 
-            {/* Premium Breakdown */}
+            {/* Dynamic Premium Breakdown — Visual */}
             <div className="p-5 rounded-2xl bg-[var(--color-surface)]">
-              <h4 className="font-semibold mb-3 flex items-center gap-2">
-                <Brain size={16} className="text-[var(--color-primary-light)]" /> AI Premium Breakdown
+              <h4 className="font-semibold mb-4 flex items-center gap-2">
+                <Brain size={16} className="text-[var(--color-primary-light)]" /> ML Premium Breakdown
               </h4>
-              <div className="space-y-2">
-                {premiumCalc.breakdown.map((item, i) => (
-                  <div key={i} className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-1.5 h-1.5 rounded-full ${item.type === "discount" ? "bg-emerald-400" : item.type === "base" ? "bg-indigo-400" : "bg-amber-400"}`} />
-                      <span className="text-[var(--color-text-secondary)]">{item.label}</span>
+
+              {/* Visual bar chart of adjustments */}
+              <div className="space-y-3 mb-4">
+                {premiumCalc.breakdown.map((item, i) => {
+                  const maxAmt = Math.max(...premiumCalc.breakdown.map(b => Math.abs(b.amount)));
+                  const barWidth = maxAmt > 0 ? Math.max(8, (Math.abs(item.amount) / maxAmt) * 100) : 50;
+                  const isDiscount = item.amount < 0;
+                  const isBase = item.type === "base";
+
+                  return (
+                    <div key={i} className="group">
+                      <div className="flex items-center justify-between text-xs mb-1">
+                        <span className="text-[var(--color-text-secondary)] font-medium">{item.label}</span>
+                        <span className={`font-bold ${isDiscount ? "text-emerald-400" : isBase ? "text-indigo-400" : "text-amber-400"}`}>
+                          {item.amount >= 0 ? "+" : ""}₹{item.amount}
+                        </span>
+                      </div>
+                      <div className="h-3 rounded-full bg-[var(--color-surface-lighter)] overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all duration-500 ${
+                            isDiscount ? "bg-emerald-500" : isBase ? "bg-gradient-to-r from-indigo-500 to-indigo-600" : "bg-gradient-to-r from-amber-500 to-amber-600"
+                          }`}
+                          style={{ width: `${barWidth}%` }}
+                        />
+                      </div>
                     </div>
-                    <span className={`font-medium ${item.amount < 0 ? "text-emerald-400" : ""}`}>
-                      {item.amount >= 0 ? "+" : ""}₹{item.amount}
-                    </span>
+                  );
+                })}
+              </div>
+
+              {/* Total line */}
+              <div className="border-t border-[var(--color-border)] pt-3 flex items-center justify-between font-bold">
+                <span>Weekly Stabilization Fee</span>
+                <span className="gradient-text text-xl">₹{premiumCalc.finalPremium}/week</span>
+              </div>
+            </div>
+
+            {/* Hyper-Local Factor Explanation */}
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-500/5 to-cyan-500/5 border border-indigo-500/20">
+              <div className="text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-3">
+                How ML Adjusts Your Price
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  {
+                    factor: "Zone Risk",
+                    detail: demoWorker.city === "Mumbai" ? "Mumbai monsoon zone → +25%" : `${demoWorker.city || "City"} weather data → adjusted`,
+                    impact: "high",
+                  },
+                  {
+                    factor: "Vehicle Type",
+                    detail: demoWorker.vehicleType === "ev_scooter" ? "EV handles floods better → -10%" : demoWorker.vehicleType === "bicycle" ? "Bicycle vulnerable → +15%" : "Standard exposure",
+                    impact: demoWorker.vehicleType === "ev_scooter" ? "low" : "medium",
+                  },
+                  {
+                    factor: "Season",
+                    detail: new Date().getMonth() >= 5 && new Date().getMonth() <= 8 ? "Monsoon active → +30%" : "Off-season → neutral",
+                    impact: new Date().getMonth() >= 5 && new Date().getMonth() <= 8 ? "high" : "low",
+                  },
+                  {
+                    factor: "Work Hours",
+                    detail: (parseInt(formData.avgWeeklyHours) || 45) > 42 ? ">42 hrs/wk exposure → +10%" : "Standard hours → neutral",
+                    impact: (parseInt(formData.avgWeeklyHours) || 45) > 42 ? "medium" : "low",
+                  },
+                ].map((f) => (
+                  <div key={f.factor} className="flex items-start gap-2 p-2 rounded-lg bg-[var(--color-surface)]">
+                    <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
+                      f.impact === "high" ? "bg-red-400" : f.impact === "medium" ? "bg-amber-400" : "bg-emerald-400"
+                    }`} />
+                    <div>
+                      <div className="text-xs font-semibold">{f.factor}</div>
+                      <div className="text-[10px] text-[var(--color-text-muted)]">{f.detail}</div>
+                    </div>
                   </div>
                 ))}
-                <div className="border-t border-[var(--color-border)] pt-2 mt-2 flex items-center justify-between font-bold">
-                  <span>Weekly Premium</span>
-                  <span className="gradient-text text-lg">₹{premiumCalc.finalPremium}/week</span>
-                </div>
               </div>
+            </div>
+
+            {/* Key insight */}
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+              <Zap size={16} className="text-emerald-400 shrink-0" />
+              <p className="text-xs text-[var(--color-text-secondary)]">
+                Your premium is <strong>₹{premiumCalc.finalPremium}/week</strong> — auto-deducted on your payout day. If heavy rain hits your zone, Floor pays you instantly. No forms. No waiting.
+              </p>
             </div>
           </div>
         )}
@@ -307,13 +374,23 @@ export default function OnboardingPage({ onNavigate }: OnboardingPageProps) {
             <ChevronLeft size={16} /> Back
           </button>
           <button
-            onClick={() => {
+            onClick={async () => {
               if (step < totalSteps) {
                 setStep(step + 1);
               } else {
-                // Actually add the worker to state!
-                addWorker(demoWorker, formData.selectedPlan);
-                onNavigate("dashboard");
+                // Actually add the worker to state via API!
+                const { createWorker, createPolicy } = await import("../services/api");
+                const workerRes = await createWorker(demoWorker as any);
+                if (workerRes && workerRes._id) {
+                  await createPolicy({
+                    workerId: workerRes._id,
+                    workerName: workerRes.name,
+                    plan: formData.selectedPlan,
+                    platform: workerRes.platform,
+                    weeklyPremium: premiumCalc.finalPremium,
+                  });
+                }
+                setTimeout(() => onNavigate("dashboard"), 500);
               }
             }}
             className="btn-primary inline-flex items-center gap-2"
