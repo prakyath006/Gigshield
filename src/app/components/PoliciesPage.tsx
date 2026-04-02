@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Shield, CheckCircle, Clock, XCircle, RefreshCw,
   Pause, Play, TrendingUp, ArrowUpCircle, ChevronDown,
@@ -113,9 +113,9 @@ function PolicyCard({ policy }: { policy: Policy }) {
             <Zap size={11} /> Active Triggers ({policy.triggers.filter((t) => t.isActive).length})
           </div>
           <div className="flex flex-wrap gap-1.5">
-            {policy.triggers.filter((t) => t.isActive).slice(0, 5).map((trigger) => (
+            {policy.triggers.filter((t) => t.isActive).slice(0, 5).map((trigger: any) => (
               <span
-                key={trigger.id}
+                key={trigger._id || trigger.id || trigger.name}
                 className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${
                   trigger.type === "weather" ? "bg-blue-500/10 text-blue-400 border-blue-500/20" :
                   trigger.type === "environmental" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" :
@@ -131,8 +131,8 @@ function PolicyCard({ policy }: { policy: Policy }) {
 
         {/* Dates + auto-renew */}
         <div className="flex items-center justify-between text-xs text-[var(--color-text-muted)] mb-5">
-          <span>Starts: <span className="text-[var(--color-text-primary)]">{policy.startDate}</span></span>
-          <span>Ends: <span className="text-[var(--color-text-primary)]">{policy.endDate}</span></span>
+          <span>Starts: <span className="text-[var(--color-text-primary)]">{new Date(policy.startDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span></span>
+          <span>Ends: <span className="text-[var(--color-text-primary)]">{policy.endDate ? new Date(policy.endDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "Auto-renew"}</span></span>
           <span className="inline-flex items-center gap-1">
             <RefreshCw size={11} className={policy.autoRenew ? "text-emerald-400" : "text-gray-500"} />
             {policy.autoRenew ? "Auto-renew" : "Manual"}
@@ -249,7 +249,16 @@ function PolicyCard({ policy }: { policy: Policy }) {
 }
 
 export default function PoliciesPage() {
-  const { policies } = useApp();
+  const [policies, setPolicies] = useState<any[]>([]);
+
+  useEffect(() => {
+    import("../services/api").then(({ fetchPolicies }) => {
+      fetchPolicies().then((data: any) => {
+        if (data) setPolicies(data);
+      });
+    });
+  }, []);
+
   const active = policies.filter((p) => p.status === "active").length;
   const totalPayout = policies.reduce((s, p) => s + p.coverageAmount, 0);
 
@@ -291,7 +300,7 @@ export default function PoliciesPage() {
       ) : (
         <div className="grid md:grid-cols-2 gap-5">
           {policies.map((policy) => (
-            <PolicyCard key={policy.id} policy={policy} />
+            <PolicyCard key={policy._id || policy.id} policy={policy} />
           ))}
         </div>
       )}
