@@ -165,3 +165,61 @@ export async function fetchDashboardMetrics() {
     return null;
   }
 }
+
+// ─── Phase 3: Payouts (Razorpay Sandbox) ─────────────────────
+export async function initiatePayout(claimId: string, upiId?: string) {
+  try {
+    const res = await fetch(`${API_BASE}/payouts/initiate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ claimId, upiId }),
+      signal: AbortSignal.timeout(15000), // gateway takes up to 3s
+    });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchPayouts(workerId?: string) {
+  try {
+    const url = workerId ? `${API_BASE}/payouts/worker/${workerId}` : `${API_BASE}/payouts`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchPayoutAnalytics() {
+  try {
+    const res = await fetch(`${API_BASE}/payouts/analytics`, { signal: AbortSignal.timeout(5000) });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
+// ─── Phase 3: Insurer & Worker Analytics ─────────────────────
+export async function fetchInsurerAnalytics() {
+  try {
+    const res = await fetch(`${API_BASE}/analytics/insurer`, { signal: AbortSignal.timeout(10000) });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchWorkerAnalytics(workerId: string) {
+  try {
+    const res = await fetch(`${API_BASE}/analytics/worker/${workerId}`, { signal: AbortSignal.timeout(5000) });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}

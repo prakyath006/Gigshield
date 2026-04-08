@@ -1,8 +1,13 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { PageType } from "../types";
-import { Phone, Shield, CheckCircle2, ArrowRight, Fingerprint, Lock, Sparkles } from "lucide-react";
+import {
+  Mail, Lock, Shield, CheckCircle2, ArrowRight,
+  Loader2, AlertCircle, Eye, EyeOff, User, Sparkles,
+} from "lucide-react";
 import { useApp } from "../context/AppContext";
+
+const API = "http://localhost:5000/api";
 
 interface RegisterPageProps {
   onNavigate: (page: PageType) => void;
@@ -10,87 +15,83 @@ interface RegisterPageProps {
 
 export default function RegisterPage({ onNavigate }: RegisterPageProps) {
   const { setCurrentWorker } = useApp();
-  const [step, setStep] = useState<"phone" | "otp" | "verified">("phone");
-  const [phone, setPhone] = useState("");
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-  const [timer, setTimer] = useState(0);
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [generatedOtp, setGeneratedOtp] = useState("");
-  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const [mode, setMode]         = useState<"login" | "signup">("login");
+  const [name, setName]         = useState("");
+  const [email, setEmail]       = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPw, setConfirmPw] = useState("");
+  const [showPw, setShowPw]     = useState(false);
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState("");
+  const [success, setSuccess]   = useState("");
 
-  // Countdown timer for OTP
-  useEffect(() => {
-    if (timer > 0) {
-      const interval = setInterval(() => setTimer((t) => t - 1), 1000);
-      return () => clearInterval(interval);
-    }
-  }, [timer]);
+  const isValidEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 
-  const handleSendOtp = () => {
-    if (phone.length !== 10) return;
-    const code = String(Math.floor(100000 + Math.random() * 900000));
-    setGeneratedOtp(code);
-    setStep("otp");
-    setTimer(30);
-    // Focus first OTP input
-    setTimeout(() => otpRefs.current[0]?.focus(), 100);
-  };
+  function reset() {
+    setError(""); setSuccess(""); setPassword(""); setConfirmPw("");
+  }
 
-  const handleOtpChange = (index: number, value: string) => {
-    if (value.length > 1) return;
-    const newOtp = [...otp];
-    newOtp[index] = value;
-    setOtp(newOtp);
+  // ── SUBMIT ──────────────────────────────────────────────────
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(""); setSuccess("");
 
-    // Auto-focus next input
-    if (value && index < 5) {
-      otpRefs.current[index + 1]?.focus();
+    // Validation
+    if (!isValidEmail(email)) { setError("Enter a valid email address"); return; }
+    if (password.length < 6)  { setError("Password must be at least 6 characters"); return; }
+    if (mode === "signup") {
+      if (!name.trim())         { setError("Please enter your full name"); return; }
+      if (password !== confirmPw) { setError("Passwords do not match"); return; }
     }
 
-    // Auto-verify when all 6 digits entered
-    if (newOtp.every((d) => d !== "") && newOtp.join("").length === 6) {
-      verifyOtp(newOtp.join(""));
-    }
-  };
+    setLoading(true);
+    try {
+      const endpoint = mode === "signup" ? "/auth/signup" : "/auth/login";
+      const body = mode === "signup"
+        ? { name: name.trim(), email, password }
+        : { email, password };
 
-  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
-      otpRefs.current[index - 1]?.focus();
-    }
-  };
+      const res  = await fetch(`${API}${endpoint}`, {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify(body),
+      });
+      const data = await res.json();
 
-  const verifyOtp = async (enteredOtp: string) => {
-    setIsVerifying(true);
-    
-    if (enteredOtp.length === 6) {
-      try {
-        const { fetchWorkers } = await import("../services/api");
-        const workers = await fetchWorkers();
-        const existingWorker = workers?.find((w: any) => w.phone === phone);
-
-        setStep("verified");
-        setTimeout(() => {
-          if (existingWorker) {
-            // Existing user, log them in and go directly to dashboard
-            setCurrentWorker(existingWorker);
-            onNavigate("dashboard");
-          } else {
-            // New user, push to onboarding
-            onNavigate("onboarding");
-          }
-        }, 1500);
-      } catch (err) {
-        setStep("verified");
-        setTimeout(() => onNavigate("onboarding"), 1500);
+      if (!res.ok) {
+        setError(data.error || "Something went wrong");
+        setLoading(false);
+        return;
       }
-    } else {
-      setIsVerifying(false);
+
+      // Store JWT token
+      if (data.token) localStorage.setItem("floor_token", data.token);
+
+      if (data.worker) {
+        setCurrentWorker(data.worker);
+        setSuccess(data.message || "Welcome!");
+        setTimeout(() => onNavigate("dashboard"), 1000);
+      } else {
+        // New user with no worker profile yet → onboarding
+        setSuccess("Account created! Setting up your profile…");
+        setTimeout(() => onNavigate("onboarding"), 1000);
+      }
+    } catch {
+      setError("Network error — is the backend running?");
+      setLoading(false);
     }
-  };
+  }
+
+  // ── SANDBOX QUICK FILL ───────────────────────────────────────
+  const sandboxAccounts = [
+    { name: "Rajesh Kumar", email: "rajesh.k@email.com", platform: "Zomato · Mumbai" },
+    { name: "Priya Sharma",  email: "priya.s@email.com",  platform: "Swiggy · Mumbai" },
+    { name: "Amit Patel",    email: "amit.p@email.com",   platform: "Zepto · Delhi"   },
+  ];
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
-      {/* Background effects */}
+      {/* Background */}
       <div className="fixed inset-0 bg-gradient-to-br from-indigo-900/20 via-transparent to-cyan-900/20 pointer-events-none" />
       <div className="fixed top-20 left-10 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl animate-float pointer-events-none" />
       <div className="fixed bottom-20 right-10 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-float pointer-events-none" style={{ animationDelay: "3s" }} />
@@ -104,232 +105,176 @@ export default function RegisterPage({ onNavigate }: RegisterPageProps) {
             </div>
             <span className="text-3xl font-black gradient-text">Floor</span>
           </div>
-          <p className="text-sm text-[var(--color-text-muted)]">
-            Your earnings have a Floor now.
-          </p>
+          <p className="text-sm text-[var(--color-text-muted)]">Your earnings have a Floor now.</p>
         </div>
 
-        {/* Card */}
         <div className="glass rounded-3xl p-8 animate-fade-in">
-          {/* Step indicator */}
-          <div className="flex items-center justify-center gap-2 mb-8">
-            {["Phone", "Verify", "Done"].map((label, i) => {
-              const isActive =
-                (i === 0 && step === "phone") ||
-                (i === 1 && step === "otp") ||
-                (i === 2 && step === "verified");
-              const isDone =
-                (i === 0 && step !== "phone") ||
-                (i === 1 && step === "verified");
-              return (
-                <div key={label} className="flex items-center gap-2">
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                      isDone
-                        ? "bg-[var(--color-success)] text-white"
-                        : isActive
-                        ? "gradient-bg text-white"
-                        : "bg-[var(--color-surface-lighter)] text-[var(--color-text-muted)]"
-                    }`}
-                  >
-                    {isDone ? <CheckCircle2 size={16} /> : i + 1}
-                  </div>
-                  <span
-                    className={`text-xs hidden sm:inline ${
-                      isActive || isDone
-                        ? "text-[var(--color-text-primary)]"
-                        : "text-[var(--color-text-muted)]"
-                    }`}
-                  >
-                    {label}
-                  </span>
-                  {i < 2 && (
-                    <div
-                      className={`w-8 h-0.5 rounded-full ${
-                        isDone
-                          ? "bg-[var(--color-success)]"
-                          : "bg-[var(--color-surface-lighter)]"
-                      }`}
-                    />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          {/* STEP 1: Phone Number */}
-          {step === "phone" && (
-            <div className="animate-slide-up">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-indigo-500/15 flex items-center justify-center">
-                  <Phone size={20} className="text-indigo-400" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold">Enter your mobile number</h2>
-                  <p className="text-xs text-[var(--color-text-muted)]">
-                    We&apos;ll send a 6-digit OTP to verify your identity
-                  </p>
-                </div>
-              </div>
-
-              <div className="relative mb-6">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
-                  <span className="text-lg">🇮🇳</span>
-                  <span className="font-medium">+91</span>
-                  <div className="w-px h-5 bg-[var(--color-border)]" />
-                </div>
-                <input
-                  type="tel"
-                  maxLength={10}
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
-                  placeholder="Enter 10-digit mobile number"
-                  className="w-full pl-24 pr-4 py-4 rounded-2xl bg-[var(--color-surface-lighter)] border border-[var(--color-border)] text-lg font-medium focus:outline-none focus:border-[var(--color-primary)] transition-colors"
-                />
-              </div>
-
+          {/* Login / Signup toggle */}
+          <div className="flex rounded-2xl bg-[var(--color-surface-light)] p-1 mb-8">
+            {(["login", "signup"] as const).map((m) => (
               <button
-                onClick={handleSendOtp}
-                disabled={phone.length !== 10}
-                className={`w-full py-4 rounded-2xl font-semibold text-lg flex items-center justify-center gap-2 transition-all ${
-                  phone.length === 10
-                    ? "btn-primary cursor-pointer"
-                    : "bg-[var(--color-surface-lighter)] text-[var(--color-text-muted)] cursor-not-allowed"
+                key={m}
+                onClick={() => { setMode(m); reset(); }}
+                className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer border-none ${
+                  mode === m
+                    ? "gradient-bg text-white shadow-lg"
+                    : "bg-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
                 }`}
               >
-                Send OTP <ArrowRight size={20} />
+                {m === "login" ? "Log In" : "Sign Up"}
               </button>
+            ))}
+          </div>
 
-              <div className="mt-6 p-4 rounded-xl bg-indigo-500/5 border border-indigo-500/20">
-                <div className="flex items-start gap-3">
-                  <Lock size={16} className="text-indigo-400 mt-0.5 shrink-0" />
-                  <p className="text-xs text-[var(--color-text-secondary)]">
-                    Your number is encrypted and only used for authentication. We never share your data with third parties.
-                  </p>
-                </div>
-              </div>
-
-              {/* Quick Access — Sandbox accounts */}
-              <div className="mt-4 p-4 rounded-xl bg-[var(--color-surface-light)] border border-[var(--color-border)]">
-                <div className="flex items-center gap-2 mb-3">
-                  <Sparkles size={14} className="text-violet-400" />
-                  <span className="text-xs font-semibold text-[var(--color-text-secondary)]">Sandbox Test Accounts</span>
-                </div>
-                <div className="space-y-2">
-                  {[
-                    { name: "Rajesh Kumar", phone: "9876543210", platform: "Zomato", city: "Mumbai" },
-                    { name: "Priya Sharma", phone: "9876543211", platform: "Swiggy", city: "Mumbai" },
-                    { name: "Amit Patel", phone: "9876543212", platform: "Zepto", city: "Delhi" },
-                  ].map((acct) => (
-                    <button
-                      key={acct.phone}
-                      onClick={() => { setPhone(acct.phone); }}
-                      className="w-full flex items-center justify-between p-2.5 rounded-lg bg-[var(--color-surface)] hover:bg-[var(--color-surface-lighter)] border border-transparent hover:border-[var(--color-border)] transition-all cursor-pointer text-left"
-                    >
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500/20 to-cyan-500/20 flex items-center justify-center text-[10px] font-bold text-[var(--color-primary-light)]">
-                          {acct.name.split(" ").map(n => n[0]).join("")}
-                        </div>
-                        <div>
-                          <div className="text-xs font-medium">{acct.name}</div>
-                          <div className="text-[10px] text-[var(--color-text-muted)]">{acct.platform} • {acct.city}</div>
-                        </div>
-                      </div>
-                      <span className="text-[10px] font-mono text-[var(--color-text-muted)]">+91 {acct.phone}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* STEP 2: OTP Verification */}
-          {step === "otp" && (
-            <div className="animate-slide-up">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-cyan-500/15 flex items-center justify-center">
-                  <Fingerprint size={20} className="text-cyan-400" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold">Verify OTP</h2>
-                  <p className="text-xs text-[var(--color-text-muted)]">
-                    Sent to +91 {phone.slice(0, 3)}****{phone.slice(7)}
-                  </p>
-                </div>
-              </div>
-
-              {/* OTP Inputs */}
-              <div className="flex gap-3 justify-center mb-6">
-                {otp.map((digit, i) => (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Name — only on signup */}
+            {mode === "signup" && (
+              <div>
+                <label className="block text-xs font-medium mb-1.5 text-[var(--color-text-secondary)]">Full Name</label>
+                <div className="relative">
+                  <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
                   <input
-                    key={i}
-                    ref={(el) => { otpRefs.current[i] = el; }}
                     type="text"
-                    inputMode="numeric"
-                    maxLength={1}
-                    value={digit}
-                    onChange={(e) => handleOtpChange(i, e.target.value)}
-                    onKeyDown={(e) => handleOtpKeyDown(i, e)}
-                    className={`w-12 h-14 text-center text-xl font-bold rounded-xl border transition-all focus:outline-none ${
-                      digit
-                        ? "border-[var(--color-primary)] bg-[var(--color-primary)]/10"
-                        : "border-[var(--color-border)] bg-[var(--color-surface-lighter)]"
-                    } focus:border-[var(--color-primary)]`}
+                    placeholder="Rajesh Kumar"
+                    value={name}
+                    onChange={(e) => { setName(e.target.value); setError(""); }}
+                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-[var(--color-surface-light)] border border-[var(--color-border)] text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary)] transition-all text-sm"
+                    autoFocus
                   />
-                ))}
-              </div>
-
-              {isVerifying && (
-                <div className="flex items-center justify-center gap-2 mb-4 text-sm text-[var(--color-primary-light)]">
-                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                  Verifying...
                 </div>
+              </div>
+            )}
+
+            {/* Email */}
+            <div>
+              <label className="block text-xs font-medium mb-1.5 text-[var(--color-text-secondary)]">Email Address</label>
+              <div className="relative">
+                <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
+                <input
+                  type="email"
+                  placeholder="you@email.com"
+                  value={email}
+                  onChange={(e) => { setEmail(e.target.value); setError(""); }}
+                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-[var(--color-surface-light)] border border-[var(--color-border)] text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary)] transition-all text-sm"
+                  autoFocus={mode === "login"}
+                />
+              </div>
+            </div>
+
+            {/* Password */}
+            <div>
+              <label className="block text-xs font-medium mb-1.5 text-[var(--color-text-secondary)]">Password</label>
+              <div className="relative">
+                <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
+                <input
+                  type={showPw ? "text" : "password"}
+                  placeholder={mode === "signup" ? "Min 6 characters" : "Your password"}
+                  value={password}
+                  onChange={(e) => { setPassword(e.target.value); setError(""); }}
+                  className="w-full pl-10 pr-10 py-3 rounded-xl bg-[var(--color-surface-light)] border border-[var(--color-border)] text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary)] transition-all text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPw(!showPw)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] border-none bg-transparent cursor-pointer hover:text-[var(--color-text-primary)] transition-colors"
+                >
+                  {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Confirm Password — signup only */}
+            {mode === "signup" && (
+              <div>
+                <label className="block text-xs font-medium mb-1.5 text-[var(--color-text-secondary)]">Confirm Password</label>
+                <div className="relative">
+                  <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
+                  <input
+                    type={showPw ? "text" : "password"}
+                    placeholder="Repeat password"
+                    value={confirmPw}
+                    onChange={(e) => { setConfirmPw(e.target.value); setError(""); }}
+                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-[var(--color-surface-light)] border border-[var(--color-border)] text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary)] transition-all text-sm"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Error */}
+            {error && (
+              <div className="flex items-center gap-2 text-sm text-red-400 bg-red-500/10 px-4 py-2.5 rounded-xl">
+                <AlertCircle size={14} className="shrink-0" /> {error}
+              </div>
+            )}
+
+            {/* Success */}
+            {success && (
+              <div className="flex items-center gap-2 text-sm text-emerald-400 bg-emerald-500/10 px-4 py-2.5 rounded-xl">
+                <CheckCircle2 size={14} className="shrink-0" /> {success}
+              </div>
+            )}
+
+            {/* Submit button */}
+            <button
+              type="submit"
+              disabled={loading || !!success}
+              className="w-full py-3.5 rounded-xl font-bold btn-primary flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed mt-2"
+            >
+              {loading ? (
+                <><Loader2 size={18} className="animate-spin" /> {mode === "signup" ? "Creating Account…" : "Logging In…"}</>
+              ) : success ? (
+                <><CheckCircle2 size={18} /> Done!</>
+              ) : mode === "signup" ? (
+                <><Sparkles size={18} /> Create Account <ArrowRight size={16} /></>
+              ) : (
+                <><ArrowRight size={18} /> Log In <ArrowRight size={16} /></>
               )}
+            </button>
 
-              <div className="flex items-center justify-between text-sm mb-6">
-                <span className="text-[var(--color-text-muted)]">
-                  Didn&apos;t receive?
-                </span>
-                {timer > 0 ? (
-                  <span className="text-[var(--color-text-muted)]">
-                    Resend in {timer}s
-                  </span>
-                ) : (
-                  <button
-                    onClick={handleSendOtp}
-                    className="text-[var(--color-primary-light)] font-medium cursor-pointer bg-transparent border-none hover:underline"
-                  >
-                    Resend OTP
+            {/* Toggle hint */}
+            <p className="text-center text-xs text-[var(--color-text-muted)] pt-1">
+              {mode === "login" ? (
+                <>Don't have an account?{" "}
+                  <button type="button" onClick={() => { setMode("signup"); reset(); }} className="text-[var(--color-primary-light)] font-semibold hover:underline bg-transparent border-none cursor-pointer">
+                    Sign Up
                   </button>
-                )}
-              </div>
+                </>
+              ) : (
+                <>Already have an account?{" "}
+                  <button type="button" onClick={() => { setMode("login"); reset(); }} className="text-[var(--color-primary-light)] font-semibold hover:underline bg-transparent border-none cursor-pointer">
+                    Log In
+                  </button>
+                </>
+              )}
+            </p>
+          </form>
 
-
+          {/* Sandbox quick fill */}
+          <div className="mt-6 pt-5 border-t border-[var(--color-border)]">
+            <p className="text-xs text-[var(--color-text-muted)] text-center mb-3">⚡ Demo Sandbox — click to auto-fill</p>
+            <div className="space-y-1.5">
+              {sandboxAccounts.map((acc) => (
+                <button
+                  key={acc.email}
+                  type="button"
+                  onClick={() => {
+                    setEmail(acc.email);
+                    setPassword("floor123");
+                    setName(acc.name);
+                    setError("");
+                  }}
+                  className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl bg-[var(--color-surface-light)] border border-[var(--color-border)] hover:border-[var(--color-primary)] transition-all cursor-pointer text-left"
+                >
+                  <div>
+                    <div className="text-sm font-semibold">{acc.name}</div>
+                    <div className="text-xs text-[var(--color-text-muted)]">{acc.platform}</div>
+                  </div>
+                  <span className="text-xs text-[var(--color-text-muted)] font-mono">floor123</span>
+                </button>
+              ))}
             </div>
-          )}
-
-          {/* STEP 3: Verified */}
-          {step === "verified" && (
-            <div className="animate-slide-up text-center py-8">
-              <div className="w-20 h-20 rounded-full bg-[var(--color-success)]/20 flex items-center justify-center mx-auto mb-6">
-                <CheckCircle2 size={40} className="text-[var(--color-success)]" />
-              </div>
-              <h2 className="text-2xl font-bold mb-2">Verified!</h2>
-              <p className="text-[var(--color-text-secondary)] mb-4">
-                Welcome to Floor. Setting up your profile...
-              </p>
-              <div className="flex items-center justify-center gap-2 text-sm text-[var(--color-primary-light)]">
-                <Sparkles size={16} />
-                Redirecting to onboarding...
-              </div>
-            </div>
-          )}
+          </div>
         </div>
-
-        {/* Bottom text */}
-        <p className="text-center text-xs text-[var(--color-text-muted)] mt-6">
-          By continuing, you agree to Floor&apos;s Terms of Service and Privacy Policy
-        </p>
       </div>
     </div>
   );
