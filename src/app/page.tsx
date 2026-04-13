@@ -15,6 +15,7 @@ import AnalyticsPage from "./components/AnalyticsPage";
 import AdminPage from "./components/AdminPage";
 import ProfilePage from "./components/ProfilePage";
 import RedTeamPage from "./components/RedTeamPage";
+import WorkerDashboard from "./components/WorkerDashboard";
 
 export default function Home() {
   const [currentPage, setCurrentPage] = useState<PageType>("landing");
@@ -50,6 +51,8 @@ export default function Home() {
         return <ProfilePage />;
       case "redteam":
         return <RedTeamPage />;
+      case "worker-dashboard":
+        return <WorkerDashboard />;
       default:
         return <LandingPage onNavigate={handleNavigate} />;
     }

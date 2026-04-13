@@ -170,6 +170,7 @@ export type PageType =
   | "register"
   | "onboarding"
   | "dashboard"
+  | "worker-dashboard"
   | "policies"
   | "claims"
   | "alerts"
