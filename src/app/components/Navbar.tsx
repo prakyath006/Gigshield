@@ -15,6 +15,7 @@ import {
   Zap,
   Radio,
   Target,
+  Wallet,
 } from "lucide-react";
 
 interface NavbarProps {
@@ -23,14 +24,15 @@ interface NavbarProps {
 }
 
 const navItems: { page: PageType; label: string; icon: React.ReactNode }[] = [
-  { page: "dashboard", label: "Dashboard", icon: <LayoutDashboard size={18} /> },
-  { page: "policies", label: "Policies", icon: <FileText size={18} /> },
-  { page: "claims", label: "Claims", icon: <Zap size={18} /> },
-  { page: "alerts", label: "Alerts", icon: <AlertTriangle size={18} /> },
-  { page: "triggers", label: "Triggers", icon: <Radio size={18} /> },
-  { page: "analytics", label: "Analytics", icon: <BarChart3 size={18} /> },
+  { page: "dashboard",        label: "Dashboard",  icon: <LayoutDashboard size={18} /> },
+  { page: "worker-dashboard", label: "My Coverage", icon: <Wallet size={18} /> },
+  { page: "policies",         label: "Policies",   icon: <FileText size={18} /> },
+  { page: "claims",           label: "Claims",     icon: <Zap size={18} /> },
+  { page: "alerts",           label: "Alerts",     icon: <AlertTriangle size={18} /> },
+  { page: "triggers",         label: "Triggers",   icon: <Radio size={18} /> },
+  { page: "analytics",        label: "Analytics",  icon: <BarChart3 size={18} /> },
   { page: "redteam" as PageType, label: "Red Team", icon: <Target size={18} /> },
-  { page: "admin", label: "Admin", icon: <Settings size={18} /> },
+  { page: "admin",            label: "Admin",      icon: <Settings size={18} /> },
 ];
 
 export default function Navbar({ currentPage, onNavigate }: NavbarProps) {
